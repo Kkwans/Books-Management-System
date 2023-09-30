@@ -1,671 +1,78 @@
-<!--访问地址：localhost:80/pages/admin.html-->
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>图书管理系统</title>
-    <!--引入css样式-->
-    <link rel="stylesheet" href="../plugins/element-ui/theme-chalk/index.css"/>
-    <link rel="stylesheet" href="../css/style.css">
-</head>
+  <meta charset="UTF-8">
+  <title>Login Redirect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-<body>
-<div  id="app">
-    <div class="content-header">
-        <h1>
-            <span>图书管理系统</span>
-        </h1>
-        <div class="user-info">
-            <h5 >管理员：{{ this.tokenData.name }}</h5>
-            <el-button type="primary" @click="confirmLogout" size="mini">退出</el-button>
-        </div>
-    </div>
+    .container {
+      text-align: center;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    }
 
+    h1 {
+      margin-bottom: 10px;
+    }
 
-    <div class="main">
+    a {
+      color: #007bff;
+      text-decoration: none;
+      transition: color 0.3s ease-in-out;
+    }
 
-        <el-row>
-            <el-form :inline="true" :model="searchForm" class="search-form">
-                <!--操作按钮-->
-                <el-button
-                        class="deleteButton"
-                        type="danger"
-                        :disabled="multipleSelection.length === 0"
-                        @click="confirmDelete(multipleSelection.length)"
-                        plain>批量删除
-                </el-button>
-                <el-button
-                        class="addButton"
-                        type="primary"
-                        @click="addFormVisible = true"
-                        plain>添加图书
-                </el-button>
+    a:hover {
+      color: #0056b3;
+    }
 
-                <!--搜索表单-->
-                <el-select style="width: 120px" v-model="type" clearable placeholder="图书类别" class="s1">
-                    <el-option label="计算机科学" :value="'计算机科学'" ></el-option>
-                    <el-option label="科幻" :value="'科幻'"></el-option>
-                    <el-option label="武侠" :value="'武侠'"></el-option>
-                    <el-option label="历史" :value="'历史'"></el-option>
-                    <el-option label="言情" :value="'言情'"></el-option>
-                </el-select>
-                <el-select style="width: 130px" v-model="searchItem" clearable placeholder="选择搜索条目" class="s2">
-                    <el-option label="图书编号" :value="'ISBN'" ></el-option>
-                    <el-option label="图书名称" :value="'name'"></el-option>
-                    <el-option label="出版社" :value="'press'"></el-option>
-                </el-select>
-                <el-input style="width: 150px" v-model="searchContent" placeholder="输入搜索内容" class="s3"></el-input>
-                <el-form-item>
-                    <el-button type="primary" @click="selectByCondition()" class="s4">查询</el-button>
-                </el-form-item>
-            </el-form>
-        </el-row>
+    #countdown {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+  <script>
+    // 页面加载完成后自动开始倒计时
+    document.addEventListener("DOMContentLoaded", function() {
+      startCountdown();
+    });
 
+    // 倒计时函数
+    function startCountdown() {
+      let seconds = 3;
+      const countdownElement = document.getElementById("countdown");
 
-        <!--添加图书的表单（对话框形式）-->
-        <el-dialog title="添加图书" :visible.sync="addFormVisible" width="35%" center>
-            <el-form :model="book" :rules="rules" status-icon ref="book" label-width="auto">
-                <el-form-item label="图书编号" prop="ISBN" >
-                    <el-input v-model="book.ISBN" oninput="value=value.replace(/[^\d]/g,'')"></el-input>
-                </el-form-item>
-                <el-form-item label="图书名称" prop="name">
-                    <el-input v-model="book.name"></el-input>
-                </el-form-item>
-                <el-form-item label="出版社名" prop="press">
-                    <el-input v-model="book.press"></el-input>
-                </el-form-item>
-                <el-form-item label="图书类别" prop="type">
-                    <el-select v-model="book.type" placeholder="请选择图书类别">
-                        <!--注意:value前要加:实现数据双向绑定，同时注意类型，需要保持一致！！！！-->
-                        <el-option label="计算机科学" :value="'计算机科学'" ></el-option>
-                        <el-option label="科幻" :value="'科幻'"></el-option>
-                        <el-option label="武侠" :value="'武侠'"></el-option>
-                        <el-option label="历史" :value="'历史'"></el-option>
-                        <el-option label="言情" :value="'言情'"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="图书数量" prop="num">
-                    <el-input-number
-                            v-model="book.num" :min="0" :max="50" label="图书数量">
-                    </el-input-number>
-                </el-form-item>
-                <el-form-item>
-                    <el-button @click="addFormVisible = false" >取消添加</el-button>
-                    <el-button type="primary" @click="addBook('book')">确认添加</el-button>
-                </el-form-item>
-            </el-form>
-        </el-dialog>
+      const countdownInterval = setInterval(function() {
+        countdownElement.textContent = seconds + " 秒后将自动跳转...";
+        seconds--;
 
-        <!--数据表格-->
-        <el-table
-                ref="multipleTable"
-                v-loading="loading"
-                :data="tableData"
-                row-key="ISBN"
-                tooltip-effect="dark"
-                style="width: 100%"
-                :stripe=true
-                @sort-change='handleSortChange'
-                @selection-change="handleSelectionChange">
-            <!--多选框-->
-            <el-table-column
-                    type="selection"
-                    align="center"
-                    :reserve-selection=true>
-            </el-table-column>
-            <el-table-column
-                    prop="ISBN"
-                    label="图书编号"
-                    sortable='custom'
-                    align="center"
-                    width="140">
-            </el-table-column>
-            <el-table-column
-                    prop="name"
-                    label="图书名称"
-                    sortable='custom'
-                    align="center"
-                    show-overflow-tooltip>
-            </el-table-column>
-            <el-table-column
-                    prop="type"
-                    label="图书类别"
-                    sortable='custom'
-                    align="center"
-                    width="100">
-            </el-table-column>
-            <el-table-column
-                    prop="press"
-                    label="出版社"
-                    sortable='custom'
-                    align="center"
-                    show-overflow-tooltip>
-            </el-table-column>
-            <el-table-column
-                    prop="num"
-                    label="剩余数量"
-                    sortable='custom'
-                    align="center"
-                    width="100">
-            </el-table-column>
-
-            <el-table-column
-                    label="操作"
-                    align="center">
-                <!--<el-row>-->
-                <template slot-scope="scope">
-                    <!--scope.row传入本行对应的数据-->
-                    <el-button type="primary" icon="el-icon-edit" @click="showEditForm(scope.row)" circle></el-button>
-                    <el-popconfirm
-                            confirm-button-text='确认'
-                            cancel-button-text='取消'
-                            icon="el-icon-info"
-                            icon-color="red"
-                            title="确认删除该条数据吗？"
-                            @confirm="deleteBook(scope.row)">
-                        >
-                        <el-button type="danger" slot="reference" icon="el-icon-delete" circle></el-button>
-                    </el-popconfirm>
-                </template>
-                <!--</el-row>-->
-            </el-table-column>
-        </el-table>
-
-        <!--修改图书的表单（对话框形式）-->
-        <el-dialog title="修改图书信息" :visible.sync="editFormVisible" width="35%" center>
-            <el-form :model="oldBook" :rules="rules" status-icon ref="oldBook" label-width="auto">
-                <el-form-item label="图书编号" prop="ISBN">
-                    <el-input v-model="oldBook.ISBN"></el-input>
-                </el-form-item>
-                <el-form-item label="图书名称" prop="name">
-                    <el-input v-model="oldBook.name"></el-input>
-                </el-form-item>
-                <el-form-item label="出版社名" prop="press">
-                    <el-input v-model="oldBook.press"></el-input>
-                </el-form-item>
-                <el-form-item label="图书类别" prop="type">
-                    <!--注意:value前要加:实现数据双向绑定，同时注意类型，需要保持一致！！！！-->
-                    <el-select v-model="oldBook.type" placeholder="请选择图书类别">
-                        <el-option label="计算机科学" :value="'计算机科学'" ></el-option>
-                        <el-option label="科幻" :value="'科幻'"></el-option>
-                        <el-option label="武侠" :value="'武侠'"></el-option>
-                        <el-option label="历史" :value="'历史'"></el-option>
-                        <el-option label="言情" :value="'言情'"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="剩余数量" prop="num">
-                    <el-input-number
-                            v-model="oldBook.num" :min="0" :max="50" label="图书数量">
-                    </el-input-number>
-                </el-form-item>
-                <el-form-item>
-                    <el-button @click="editFormVisible = false" >取消修改</el-button>
-                    <el-button type="primary" @click="updateBook('oldBook')">确认修改</el-button>
-                </el-form-item>
-            </el-form>
-        </el-dialog>
-
-        <!--分页工具条-->
-        <br>
-        <div class="block">
-            <el-pagination
-                    @size-change="handleSizeChange"
-                    @current-change="handleCurrentChange"
-                    :current-page="currentPage"
-                    :page-sizes="[5,6,7,8,9,10]"
-                    :page-size="pageSize"
-                    layout="total, sizes, prev, pager, next, jumper"
-                    :total="totalSize">
-            </el-pagination>
-        </div>
-
-    </div>
-</div>
-
-
-<!--引入第三方组件库-->
-<script src="../js/axios-0.18.0.js"></script>
-<script src="../js/vue.js"></script>
-<script src="https://unpkg.com/vue-router@4"></script> <!--vue路由-->
-<!--<script src="/js/router.js"></script>-->
-<script src="../plugins/element-ui/index.js" charset="utf-8"></script>
-
-
-<script>
-    import router from '../js/router.js';
-    new Vue({
-        el: "#app",
-        router,
-        render: h => h(App),
-
-        data() {
-            return {
-                //品牌数据，JSON对象，用于添加或修改的数据绑定，可直接发送给后端
-                book: {
-                    ISBN: "",
-                    name: "",
-                    type: "",
-                    press:"",
-                    num:'',
-                },
-                //搜索表单数据
-                searchForm: {},
-                //回显旧数据载体（也可直接复用brand）
-                oldBook: {},
-                //表格数据
-                tableData: [],
-                //表单限制规则
-                rules:{
-                    ISBN: [
-                        {required: true, message: '请输入图书编号', trigger: 'blur'},
-                        { min: 13, max: 13, message: 'ISBN格式有误，请输入13位数字', trigger: 'blur' },
-                        {
-                            //自定义校验规则，查询ISBN是否存在（重复）
-                            validator: (rule, value, callback) => {
-                                axios.get("http://localhost/books/"+value,{
-                                    headers: {
-                                        'jwt': `${this.adminToken}`,
-                                    }
-                                })
-                                    .then(resp => {
-                                        if(resp.data.code===0){//ISBN已存在
-                                            callback(new Error('ISBN已存在'))
-                                        }else {
-                                            callback()
-                                        }
-                                    })
-                            },
-                            trigger: 'blur'
-                        }
-                    ],
-                    name: [
-                        {required: true, message: '请输入图书名称', trigger: 'blur'},
-                        { min: 1, max: 30, message: '名称过长，不能超过30字符', trigger: 'blur' }
-                    ],
-                    type: [
-                        {required: true, message: '请选择图书类别', trigger: 'blur'},
-                    ],
-                    press: [
-                        {required: true, message: '请输入出版社名称', trigger: 'blur'},
-                        { min: 1, max: 30, message: '名称过长，不能超过30字符', trigger: 'blur' }
-                    ],
-                    num: [
-                        {required: true, message: '请输入图书数量', trigger: 'blur'},
-                    ],
-                },
-                //复选框选择结果
-                multipleSelection: [],
-                //控制添加品牌对话框弹出（显示）
-                addFormVisible: false,
-                //控制修改品牌对话框弹出（显示）
-                editFormVisible:false,
-                //控制加载动画显示
-                loading:true,
-                //弹出表单宽度
-                formLabelWidth: '120px',
-                //当前页数
-                currentPage: 1,
-                //每页展示条数
-                pageSize: 6,
-                //数据总条数
-                totalSize:40,
-                //选择项（图书种类）
-                type:'',
-                //搜索项
-                searchItem:'',
-                //搜索内容
-                searchContent:'',
-                //排序字段
-                prop:'ISBN',
-                //排序方式
-                order:'ascending',
-                //jwt登录令牌
-                adminToken:'',
-                //jwt解析数据
-                tokenData:[]
-            }
-        },
-
-
-        methods:{
-            //加载数据库所有内容数据
-            selectAll(){
-                axios.get("http://localhost/books",{
-                    headers: {
-                        'jwt': `${this.adminToken}`,
-                    }})
-                    .then(resp => {
-                        //在箭头函数里，this可以代表vue对象，进行对数据的赋值
-                        //但是如果写成then(function(resp){ 的形式，就需要在函数外定义_this.this来扩大范围！！！
-                        //表格数据和tableData双向绑定，不需要手动赋值了！
-                        this.tableData = resp.data.data;
-                        this.totalSize = resp.data.data.length;
-                    })
-            },
-            selectByPage(){
-                this.loading = true;
-                axios.get("http://localhost/books/"+this.currentPage+"/"+this.pageSize,{
-                    headers: {
-                        'jwt': `${this.adminToken}`,
-                    }})
-                    .then(resp => {
-                        //设置表格数据
-                        this.tableData = resp.data.data.rows;
-                        //设置总条数
-                        this.totalSize = resp.data.data.totalSize;
-                        //关闭加载动画
-                        this.loading = false;
-                    })
-            },
-            //条件查询
-            selectByCondition(){
-                this.currentPage=1;//查询时将当前页数设为1，否则会出bug
-                //清空搜索表单
-                this.searchForm.ISBN='';
-                this.searchForm.name='';
-                this.searchForm.press='';
-                //将输入内容赋值给对应项
-                this.searchForm.type = this.type;
-                let item = this.searchItem;
-                let content = this.searchContent;
-                if(item==="ISBN") this.searchForm.ISBN = content;
-                else if(item==="name") this.searchForm.name = content;
-                else if(item==="press") this.searchForm.press = content;
-                this.selectByPageAndCondition();
-            },
-            //处理排序动作
-            handleSortChange(column){
-                this.order = column.order;
-                this.prop = column.prop;
-                this.selectByPageAndCondition();
-            },
-            //根据搜索表单数据查询对应表格行
-            selectByPageAndCondition(){
-                axios({//get请求参数和post请求数据结合使用
-                    method:"post",
-                    url:"http://localhost/books/"+this.currentPage+"/"+this.pageSize+"/"+this.prop+"/"+this.order,
-                    data:this.searchForm,
-                    headers: {
-                        'jwt': `${this.adminToken}`,
-                    }
-                }).then(resp => {
-                    //设置表格数据
-                    this.tableData = resp.data.data.rows;
-                    //设置总条数
-                    this.totalSize = resp.data.data.totalSize;
-                })
-            },
-            //执行删除操作后更新表格数据，防止当前页数据全被删除后出现bug
-            updateTableData(total,page,size){//当前数据数，当前页码，每页大小
-                //若当前页数据为空，当前页码减一
-                while(total<=(page-1)*size){
-                    page -= 1;
-                }
-                this.currentPage = page;
-                axios({//get请求参数和post请求数据结合使用
-                    method:"post",
-                    url:"http://localhost/books/"+page+"/"+size+"/"+this.prop+"/"+this.order,
-                    data:this.searchForm,
-                    headers: {
-                        'jwt': `${this.adminToken}`,
-                    }
-                }).then(resp => {
-                    //设置表格数据
-                    this.tableData = resp.data.data.rows;
-                    //设置总条数
-                    this.totalSize = resp.data.data.totalSize;
-                })
-            },
-            //提交添加图书表单
-            addBook(formName){
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        axios.post("http://localhost/books",this.book,{
-                            headers: {
-                                'jwt': `${this.adminToken}`,
-                            }
-                        })
-                            .then(resp =>{
-                                if(resp.data.code===1){//添加成功
-                                    this.successAdd();//弹出消息提示
-                                    this.selectByPageAndCondition();//更新表格数据
-                                    this.book={};//清除表单数据
-                                    this.addFormVisible = false;//关闭窗口
-                                }else{
-                                    this.failAdd();
-                                }
-                            })
-
-                    } else {
-                        this.errorAdd();
-                        return false;
-                    }
-                })
-                //console.log(this.brand);
-            },
-            //处理复选框勾选数据
-            handleSelectionChange(val) {
-                this.multipleSelection = val;//将对应数据赋值给multipleSelection
-                console.log(this.multipleSelection);
-            },
-            //将复选框数据批量删除
-            deleteSelection(num){
-                let _this = this;
-                //存储多选项的ISBN
-                var arr=[]
-                //遍历多选的对象集合，拿到每一个对象的id添加到新的集合中
-                this.multipleSelection.forEach(row=>arr.push(row.ISBN))
-                console.log(arr)
-                //发送复选框数据
-                axios.delete("http://localhost/books",arr,{
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'jwt':`${this.adminToken}`
-                    }
-                })
-                    .then(resp =>{
-                        if(resp.data.code===1){//添加成功
-                            this.$message({
-                                showClose: true,
-                                message: '删除成功~',
-                                type: 'success'
-                            });
-                            //更新表格数据
-                            this.updateTableData(this.totalSize-num,this.currentPage,this.pageSize);
-                            //this.selectByPageAndCondition();
-                        }else{
-                            this.$message({
-                                showClose: true,
-                                message: '删除失败,请稍后重试！',
-                                type: 'error'
-                            });
-                        }
-                    })
-            },
-            //批量删除确认框
-            confirmDelete(num) {
-                this.$confirm('此操作将删除'+num+'条数据，是否继续？', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.deleteSelection(num);//调用批量删除方法
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });
-                });
-            },
-            //显示（弹出）修改表单
-            showEditForm(old){
-                //将修改行数据赋值给oldBrand，修改表单双向绑定oldBrand数据，实现数据回显
-                this.oldBook = old;
-                this.editFormVisible = true;
-                //console.log(this.oldBrand);
-            },
-            //修改对应图书数据
-            updateBook(formName){
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        axios.put("http://localhost/books",this.oldBook,{
-                            headers: {
-                                'jwt': `${this.adminToken}`,
-                            }
-                        })
-                            .then(resp =>{
-                                if(resp.data.code===1){//添加成功
-                                    this.$message({
-                                        showClose: true,
-                                        message: '修改成功~',
-                                        type: 'success'
-                                    });
-                                    this.selectByPageAndCondition();//更新表格数据
-                                    this.editFormVisible = false;//关闭窗口
-                                }else{
-                                    this.$message({
-                                        showClose: true,
-                                        message: '修改失败，请稍后重试',
-                                        type: 'error'
-                                    });
-                                }
-                            })
-
-                    } else {
-                        this.errorAdd();
-                        return false;
-                    }
-                })
-            },
-            //删除对应图书
-            deleteBook(book){
-                axios.delete("http://localhost/books/"+book.ISBN,{
-                    headers: {
-                        'jwt': `${this.adminToken}`,
-                    }
-                })
-                    .then(resp =>{
-                        if(resp.data.code===1){//删除成功
-                            this.$message({
-                                showClose: true,
-                                message: '删除成功~',
-                                type: 'success'
-                            });
-                            //更新表格数据
-                            //this.selectByPageAndCondition();
-                            this.updateTableData(this.totalSize-1,this.currentPage,this.pageSize);
-                        }else{
-                            this.$message({
-                                showClose: true,
-                                message: '删除失败,请稍后重试！',
-                                type: 'error'
-                            });
-                        }
-                    })
-            },
-            //退出登录确认
-            confirmLogout() {
-                this.$confirm('确定要退出该账号？', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    this.Logout();//调用批量删除方法
-                }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消退出'
-                    });
-                });
-            },
-            //退出登录
-            Logout(){
-                this.tokenData = [];
-                this.adminToken = '';
-                this.setCookie('jwt',null,1);
-                localStorage.setItem("adminToken", null);
-                this.$message('账号已退出~');
-                setTimeout(() => {window.location.href = 'http://localhost/pages/pleaseLogin.html'},500);
-
-            },
-            //添加成功消息提示
-            successAdd() {
-                this.$message({
-                    showClose: true,
-                    message: '添加成功~',
-                    type: 'success'
-                });
-            },
-            //格式不对警告提示
-            errorAdd() {
-                this.$message({
-                    showClose: true,
-                    message: '格式有误，请按要求填写！',
-                    type: 'warning'
-                });
-            },
-            //添加失败消息提示
-            failAdd() {
-                this.$message({
-                    showClose: true,
-                    message: '添加失败,请稍后重试！',
-                    type: 'error'
-                });
-            },
-            //每页数据条数变化回调方法
-            handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
-                this.pageSize = val;
-                this.selectByPageAndCondition();
-            },
-            //当前页码变化回调方法
-            handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
-                this.currentPage = val;
-                this.selectByPageAndCondition();
-            },
-            //解析jwt
-            parseJwt(token) {
-                const base64Url = token.split('.')[1]; // 获取 JWT 字符串中的载荷部分
-                const base64 = base64Url.replace('-', '+').replace('_', '/'); // 替换字符
-                const decodedBase64 = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);// 处理中文乱码
-                }).join(''));
-
-                const decodedData = JSON.parse(decodedBase64); // 解析 JSON 字符串
-
-                return decodedData;
-            },
-            //对当前页面路径设置Cookie
-            setCookie(name, value, days) {
-                // 计算过期时间
-                const expires = new Date();
-                expires.setDate(expires.getDate() + days);
-
-                // 构造完整的 Cookie 字符串
-                const cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
-
-                // 将 Cookie 设置到 document.cookie 属性中
-                document.cookie = cookie;
-            }
-        },
-
-        //vue生命周期钩子方法，写在methods外面！！！！！！页面渲染完成自动调用此方法
-        mounted(){
-            //加载登录用户数据
-            this.adminToken = localStorage.getItem('adminToken');
-            this.tokenData = this.parseJwt(this.adminToken);
-            //设置浏览器Cookie
-            this.setCookie('jwt',this.adminToken,1);
-            //加载表格数据
-            this.selectByPage();
-            //this.selectAll();
-
+        if (seconds < 0) {
+          clearInterval(countdownInterval);
+          window.location.href = "http://localhost/login"; // 在这里替换为实际的登录页面URL
         }
-    })
-
-</script>
-
+      }, 1000);
+    }
+  </script>
+</head>
+<body>
+<div class="container">
+  <h1>您尚未登录，请登录后再访问！</h1>
+  <p>
+    <a href="http://localhost/login">点击这里登录</a>
+  </p>
+  <p id="countdown"></p>
+</div>
 </body>
 </html>
