@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图书管理系统 - 登录</title>
+    <!--引入css样式-->
+    <link rel="stylesheet" href="../plugins/element-ui/theme-chalk/index.css"/>
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+
+<body>
+<div id="app">
+    <div class="login-container" :class="{ 'error-animation': showError }">
+        <h2 class="login-title">图书管理系统</h2>
+        <el-form :model="loginInfo" :rules="rules" ref="loginInfo">
+            <el-form-item lable="账号" prop="id">
+                <el-input v-model="loginInfo.id" placeholder="请输入账号" :class="{ 'error-input': showError }"></el-input>
+            </el-form-item>
+            <el-form-item lable="密码" prop="pass">
+                <el-input show-password v-model="loginInfo.pass" placeholder="请输入密码" :class="{ 'error-input': showError }"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-radio-group v-model="role">
+                    <el-radio label="reader">读者</el-radio>
+                    <el-radio label="admin">管理员</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item>
+                <a href="#" class="forgot-password">忘记密码</a>
+                <a href="#" class="register-account">注册账号</a>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="login('loginInfo')">登录</el-button>
+            </el-form-item>
+        </el-form>
+        <div v-show="showError" class="error-text">账号或密码错误，请重新输入!</div>
+    </div>
+</div>
+
+<!--引入第三方组件库-->
+<script src="../js/axios-0.18.0.js"></script>
+<script src="../js/vue.js"></script>
+<script src="../plugins/element-ui/index.js" charset="utf-8"></script>
+
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                loginInfo:{
+                    id: '',
+                    pass: '',
+                },
+                role: 'reader',
+                showError: false,
+                rules:{
+                    id: [
+                        {required: true, message: '请输入账号', trigger: 'blur'},
+                        { min: 1, max: 30, message: '账号过长，不能超过30字符', trigger: 'blur' }
+                    ],
+                    pass: [
+                        {required: true, message: '请输入密码', trigger: 'blur'},
+                        { min: 1, max: 30, message: '密码过长，不能超过30字符', trigger: 'blur' }
+                    ],
+                },
+            };
+        },
+        methods: {
+            login(formName){
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        //管理员登录
+                        if(this.role==='admin') {
+                            axios.post("http://192.168.1.103/login", this.loginInfo)
+                                .then(resp => {
+                                    if (resp.data.code === 1) {//登录成功
+                                        this.$message({
+                                            showClose: true,
+                                            message: '登录成功~',
+                                            type: 'success'
+                                        });
+                                        //存储jwt到本地
+                                        localStorage.setItem("adminToken", resp.data.data);
+                                        setTimeout(() => {
+                                            //当跳转主页时，将JWT添加到请求头中：
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.open('GET', 'http://192.168.1.103/adminHome', true);
+                                            xhr.setRequestHeader('jwt', resp.data.data);
+                                            xhr.onreadystatechange = function() {
+                                                if (xhr.readyState === XMLHttpRequest.DONE) {
+                                                    if (xhr.status === 200) {
+                                                        // 请求成功，进行页面跳转
+                                                        window.location.href = 'http://192.168.1.103/adminHome';
+                                                    } else {
+                                                        // 请求失败，处理错误
+                                                        console.error('Request failed');
+                                                    }
+                                                }
+                                            };
+                                            xhr.send();
+                                            //window.location.href不能设置请求头
+                                            //window.location.href = 'http://192.168.1.103/pages/admin.html'; // 延迟跳转到另一个界面
+                                        }, 500); // 延迟时间，单位为毫秒，这里设置为0.5秒
+
+                                    } else {
+                                        this.showError = true;
+                                        this.$message({
+                                            showClose: true,
+                                            message: '登录失败，请检查账号信息！',
+                                            type: 'error'
+                                        });
+                                        setTimeout(() => {
+                                            this.showError = false;
+                                        }, 5000);
+                                    }
+                                })
+                        }else {
+
+                        }
+
+                    } else {
+                        return false;
+                    }
+                })
+            },
+        }
+    });
+</script>
+</body>
+
+</html>

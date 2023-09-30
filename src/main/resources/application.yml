@@ -1,0 +1,21 @@
+server:
+  port: 80
+
+#配置数据库连接属性
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql:///project_db?useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123123
+
+#设置日志级别
+logging:
+  level:
+    root: info
+
+#配置MyBatis扫描xml文件
+mybatis:
+  mapper-locations: classpath:*Dao.xml # xml文件的位置，注意路径写法
+  type-aliases-package: project.demo.web.domain #指向实体类的位置

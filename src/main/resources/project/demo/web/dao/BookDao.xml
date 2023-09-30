@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="project.demo.web.dao.BookDao">
+    <!--根据id集合批量删除,Mybatis会将参数封装为Map集合，数组的键为array，值为数组对象-->
+    <delete id="deleteInBathes">
+        delete
+        from tb_book
+        where ISBN in <!--item为数组中的元素，元素之间用 , 分割，起始为(，终止为)-->
+        <foreach collection="array" item="ISBN" separator="," open="(" close=")">
+            #{ISBN}
+        </foreach>;
+    </delete>
+
+    <!--多条件分页查询-->
+    <select id="selectByPageAndCondition" resultType="project.demo.web.domain.Book">
+        select *
+        from tb_book
+        <where>
+            <if test="book.type!=null and book.type!=''">
+                type = #{book.type}
+            </if>
+            <if test="book.ISBN!=null and book.ISBN!=''">
+                and ISBN like concat('%',#{book.ISBN},'%')
+            </if>
+            <if test="book.name!=null and book.name!=''">
+                and name like concat('%',#{book.name},'%')
+            </if>
+            <if test="book.press!=null and book.press!=''">
+                and press like concat('%',#{book.press},'%')
+            </if>
+        </where>
+        <if test="order=='ascending'">
+            order by ${prop}
+        </if>
+        <if test="order=='descending'">
+            order by ${prop} desc
+        </if>
+        limit #{start},#{pageSize}/*分页查询*/
+    </select>
+
+    <!--
+        #将传入的数据都当成一个字符串，会对自动传入的数据加一个双引号。如：order by #{user_id}，
+        如果传入的值是111,那么解析成sql时的值为order by “111”, 如果传入的值是id，则解析成的sql为order by “id”。
+
+        $将传入的数据直接显示生成在sql中。如：order by ${user_id}，
+        如果传入的值是111,那么解析成sql时的值为order by 111, 如果传入的值是id，则解析成的sql为order by id。
+     -->
+
+    <!--查询满足条件的总记录数-->
+    <select id="countByCondition" resultType="java.lang.Long">
+        select count(*)
+        from tb_book
+        <where>
+            <if test="book.type!=null and book.type!=''">
+                type = #{book.type}
+            </if>
+            <if test="book.ISBN!=null and book.ISBN!=''">
+                and ISBN like concat('%',#{book.ISBN},'%')
+            </if>
+            <if test="book.name!=null and book.name!=''">
+                and name like concat('%',#{book.name},'%')
+            </if>
+            <if test="book.press!=null and book.press!=''">
+                and press like concat('%',#{book.press},'%')
+            </if>
+        </where>
+    </select>
+
+
+
+</mapper>

@@ -1,0 +1,157 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/*.content-header > h1 {
+
+    margin: 0;
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+    text-align: center;
+
+    font-family:"Microsoft YaHei","微软雅黑";
+}
+
+.content-header > h1 > small {
+
+    font-size: 18px;
+
+
+    display: inline-block;
+
+    padding-left: 4px;
+
+    font-weight: 300;
+
+}
+
+.content-header > .breadcrumb {
+
+    float: right;
+
+    background: transparent;
+
+    margin-top: 0;
+
+    margin-bottom: 0;
+
+    font-size: 12px;
+
+    padding: 7px 5px;
+
+    position: absolute;
+
+    top: 20px;
+
+    right: 10px;
+
+    border-radius: 2px;
+
+}*/
+
+
+/*.deleteButton{*/
+/*    position: relative;*/
+/*    left: -110px;*/
+/*}*/
+
+/*.addButton{*/
+/*    position: relative;*/
+/*    left: 110px;*/
+/*}*/
+
+.el-table .warning-row {
+    background: oldlace;
+}
+
+.el-table .success-row {
+    background: #f0f9eb;
+}
+
+.main{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    /*background: #fff;*/
+
+    border-radius: 3px;
+    background: #ffffff;
+    border-top: 3px solid #3c8dbc;
+    /*margin-bottom: 20px;*/
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    /*left: 80px;*/
+}
+
+/*.search-form{*/
+/*    position: relative;*/
+/*    left: 130px;*/
+/*}*/
+
+.s1{
+    position: relative;
+    left: 500px;
+}
+
+.s2{
+    position: relative;
+    left: 500px;
+}
+
+.s3{
+    position: relative;
+    left: 500px;
+}
+
+.s4{
+    position: relative;
+    left: 500px;
+}
+
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-header > h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    font-family: "Microsoft YaHei", "微软雅黑";
+    flex-grow: 1; /* 让图书管理系统标题占据剩余空间 */
+}
+
+.content-header > .user-info {
+    display: flex;
+    align-items: center;
+}
+
+.content-header > .user-info > h5 {
+    /*margin-right: 10px; !* 调整用户名和按钮的间距 *!*/
+    font-size: 13px; /* 调整用户名的字体大小 */
+    margin-bottom: 0; /* 移除默认的底部边距 */
+    transform: translateX(-25px); /* 往左移动用户名 */
+}
+
+.content-header > .user-info > .el-button {
+    padding: 5px 10px;
+    font-size: 12px; /* 调整按钮的字体大小 */
+    margin-left: 10px; /* 调整按钮与用户名的间距*/
+    transform: translateX(-25px); /* 往左移动按钮 */
+    display: flex;
+    vertical-align: bottom;
+    align-items: center;
+    height: 14px; /* 设置与用户名相同的高度 */
+    /*margin-bottom: 0;*/ /* 移除默认的底部边距 */
+    margin-top: 22px; /* 调整按钮的上边距 */
+}
+
